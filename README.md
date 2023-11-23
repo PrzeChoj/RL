@@ -8,4 +8,8 @@ pip install "gymnasium[atari]"
 pip install pygame
 
 pip install tqdm
+
+pip install notebook
+
+python skiing_play.py
 ```
