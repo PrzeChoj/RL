@@ -46,6 +46,10 @@ usage: train.py [-h] [--training_frames TRAINING_FRAMES]
                 [--replay_start_size REPLAY_START_SIZE] [--checkpoint]
                 game_name weight_save_path
 
+python train.py --training_frames 10000 Skiing my_training.pt
+python test.py Skiing my_training.pt
+
+
 positional arguments:
   game_name             name of the game to train on, e.g. pong
   weight_save_path      path to where save the game
