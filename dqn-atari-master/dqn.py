@@ -273,14 +273,14 @@ class DeepQNet:
                 time.sleep(0.03)
 
                 state = self.make_state(images)
-                action = self.best_action(state) # if random.random() > 0.05 else self.random_action()
+                action = self.best_action(state)
+                #action = self.best_action(state) if random.random() > 0.05 else self.random_action()
                 image, reward, finished, _, _ = env.step(action)
                 images.append(self.process_image(image))
 
                 if frame_number > num_frames:
                     env.close()
                     return
-                
             print(reward)
 
     def save(self, path):

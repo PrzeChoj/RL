@@ -12,6 +12,8 @@ pip install tqdm
 pip install notebook
 
 python skiing_play.py
+
+python dqn-atari-master/test.py Skiing dqn-atari-master/Skiing.pt
 ```
 
 # Run DQN
