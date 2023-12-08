@@ -1,7 +1,9 @@
 .DS_Store
 roms
+runs
 dqn-atari-master/runs
-
+dqn-atari-master/skiing_back
+skiing_back
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

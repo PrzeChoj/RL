@@ -15,6 +15,7 @@ from skimage import color
 from skimage.transform import resize
 
 INFINITY = 10 ** 20
+MAX_REWARD = 30000.
 
 class DeepQNet:
     def __init__(self, env_name):
@@ -72,6 +73,7 @@ class DeepQNet:
             return [self.buffer[index] for index in indices]
 
     def _clip(self, reward):
+        reward = reward / MAX_REWARD
         if reward > 0:
             return min(reward, 1)
         elif reward == 0:
@@ -88,10 +90,28 @@ class DeepQNet:
         return self.net(state.unsqueeze(0)).squeeze(0).argmax().item()
 
     def process_image(self, image):
-        #TODO: handle flickering
+        
+        image[(image[:,:,0] == 214) & (image[:,:,1] == 92) &  (image[:,:,2] == 92)] = 0
         image = color.rgb2gray(image) # convert to grayscale
-        image = resize(image, (110, 84), anti_aliasing=False) # downsample
-        image = image[18:102, :] # crop image
+
+        image = image[30:198, :]
+        image1 = image[::2, ::2]
+        image2 = image[1::2, ::2]
+        image3 = image[::2, 1::2]
+        image4 = image[1::2, 1::2]
+        image = np.minimum(image1, image2)
+        image = np.minimum(image, image3)
+        image = np.minimum(image, image4)
+
+        image = 1 - image
+
+        image = np.append(image, [[1,1,1,1]] * 84, axis=1)
+        
+        # image ()
+
+        # image = color.rgb2gray(image) # convert to grayscale
+        # image = resize(image, (110, 84), anti_aliasing=False) # downsample
+        # image = image[18:102, :] # crop image
         return image
 
     def make_state(self, state):
