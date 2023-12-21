@@ -21,7 +21,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     checkpoint_path = args.weight_save_path if args.checkpoint else None
 
-    qnet = DeepQNet(env_name="{}Deterministic-v4".format(args.game_name.title()))
+    qnet = DeepQNet(env_name="Skiing-ram-v4")
     qnet.train(training_frames=args.training_frames,
                minibatch_size=args.minibatch_size,
                replay_memory_size=args.replay_memory_size,

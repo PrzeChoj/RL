@@ -3,7 +3,7 @@ from datetime import datetime
 import random
 import time
 
-import gym
+import gymnasium as gym
 import numpy as np
 import torch
 import torch.nn as nn
@@ -20,7 +20,8 @@ MAX_REWARD = 30000.
 class DeepQNet:
     def __init__(self, env_name):
         self.env_name = env_name
-        self.action_space = gym.make(self.env_name).action_space
+        #self.action_space = gym.make(self.env_name, obs_type="ram").action_space
+        self.action_space = gym.make("Skiing-ram-v4", obs_type="ram").action_space
         self.net = self.Net(num_outputs=self.action_space.n)
 
     class Net(nn.Module):
@@ -89,31 +90,6 @@ class DeepQNet:
         state = state.to(device)
         return self.net(state.unsqueeze(0)).squeeze(0).argmax().item()
 
-    def process_image(self, image):
-        
-        image[(image[:,:,0] == 214) & (image[:,:,1] == 92) &  (image[:,:,2] == 92)] = 0
-        image = color.rgb2gray(image) # convert to grayscale
-
-        image = image[30:198, :]
-        image1 = image[::2, ::2]
-        image2 = image[1::2, ::2]
-        image3 = image[::2, 1::2]
-        image4 = image[1::2, 1::2]
-        image = np.minimum(image1, image2)
-        image = np.minimum(image, image3)
-        image = np.minimum(image, image4)
-
-        image = 1 - image
-
-        image = np.append(image, [[1,1,1,1]] * 84, axis=1)
-        
-        # image ()
-
-        # image = color.rgb2gray(image) # convert to grayscale
-        # image = resize(image, (110, 84), anti_aliasing=False) # downsample
-        # image = image[18:102, :] # crop image
-        return image
-
     def make_state(self, state):
         state = np.stack(state, axis=0)
         # if images experiences by agent is less than 4, pad remaining state with 0
@@ -155,8 +131,8 @@ class DeepQNet:
 
         env = gym.make(self.env_name)
         for episode in range(INFINITY):
-            image, _ = env.reset()
-            images = deque([self.process_image(image)], maxlen=4)
+            imageRAM, _ = env.reset()
+            images = deque([imageRAM], maxlen=4)
 
             finished = False
             while not finished:
@@ -164,9 +140,10 @@ class DeepQNet:
 
                 state = self.make_state(images)
                 action = self.random_action()
-                image, reward, finished, _, _ = env.step(action)
+                imageRAM, _, finished, _, _ = env.step(action)
+                reward = imageRAM[5 * 18 + 7]  # ta liczba jest duza, gdy gracz jest w srodku bramki; TODO(Czy to spowoduje, ze gracz bedzie chcial sie zatrzymac w srodku bramki?)
 
-                images.append(self.process_image(image))
+                images.append(imageRAM)
                 new_state = self.make_state(images)
                 replay_memory.append((state, action, self._clip(reward), new_state, finished))
 
@@ -224,8 +201,8 @@ class DeepQNet:
             episode_net_updates = 0
 
             # initialise sequence
-            image, _ = env.reset()
-            images = deque([self.process_image(image)], maxlen=4)
+            imageRAM, _ = env.reset()
+            images = deque([imageRAM], maxlen=4)
 
             finished = False
             while not finished:
@@ -238,9 +215,10 @@ class DeepQNet:
                 epsilon = epsilon_fn(frame_number)
                 action = self.best_action(state) if random.random() > epsilon else self.random_action()
                 # execute action in emulator and obtain next image, reward
-                image, reward, finished, _, _ = env.step(action)
+                imageRAM, _, finished, _, _ = env.step(action)
+                reward = imageRAM[5 * 18 + 7]  # ta liczba jest duza, gdy gracz jest w srodku bramki; TODO(Czy to spowoduje, ze gracz bedzie chcial sie zatrzymac w srodku bramki?)
 
-                images.append(self.process_image(image))
+                images.append(imageRAM)
                 new_state = self.make_state(images)
                 # store transition in replay_memory
                 replay_memory.append((state, action, self._clip(reward), new_state, finished))
@@ -278,12 +256,12 @@ class DeepQNet:
     def play(self, num_frames=2000):
         self.net.eval()
         self.net.to("cpu")
-        env = gym.make(self.env_name, render_mode="human")
+        env = gym.make(self.env_name, render_mode="human", obs_type="ram")
 
         frame_number = 0
         for episode in range(INFINITY):
-            image, _ = env.reset()
-            images = deque([self.process_image(image)], maxlen=4)
+            imageRAM, _ = env.reset()
+            images = deque([imageRAM], maxlen=4)
 
             finished = False
             while not finished:
@@ -295,8 +273,9 @@ class DeepQNet:
                 state = self.make_state(images)
                 action = self.best_action(state)
                 #action = self.best_action(state) if random.random() > 0.05 else self.random_action()
-                image, reward, finished, _, _ = env.step(action)
-                images.append(self.process_image(image))
+                imageRAM, _, finished, _, _ = env.step(action)
+                reward = imageRAM[5 * 18 + 7]  # ta liczba jest duza, gdy gracz jest w srodku bramki; TODO(Czy to spowoduje, ze gracz bedzie chcial sie zatrzymac w srodku bramki?)
+                images.append(imageRAM)
 
                 if frame_number > num_frames:
                     env.close()
