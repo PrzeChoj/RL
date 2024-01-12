@@ -22,7 +22,47 @@ class DeepQNet:
         self.env_name = env_name
         self.action_space = gym.make(self.env_name).action_space
         self.net = self.Net(num_outputs=self.action_space.n)
+        
+        # Adam's params
+        self.old_image = None
+        self.static_images = 0
+        self.flaga_cooldown = -1 # jesli bylisly we fladze, to sie bedzie ladowalo w dol
+        
+    
+    # Adam's code
+    def new_reward(self, old_reward, image):
+        image = image[30:198, :]
+        if self.old_image is not None and np.sum(np.abs(self.old_image - image)) < 20000: # gdy sie nie rusza, to jest 19980
+            self.static_images += 1
+        else:
+            self.static_images = 0
+        
+        if self.static_images > 20:
+            return -1000 # bardzo duza kara
+        
+        # kolory:
+        # flaga 66, 72, 200
+        # gracz 214, 92, 92
+        
+        # Gracz jest na image w linii 20.
+        if (self.flaga_cooldown > -1):
+            self.flaga_cooldown -= 1
+        else:
+            licznik_dobrych_kolorow = 0 # jak sie trafi flage, to bedzie 1, jak sie potem trafi gracza, to bedzie 2, jak sie potem trafi znow flage, to bedzie dobrze
+            i = 20
+            for j in range(image.shape[1]):
+                if (licznik_dobrych_kolorow == 0 and (image[i][j] == np.array([66, 72, 200])).all()):
+                    licznik_dobrych_kolorow = 1
+                elif (licznik_dobrych_kolorow == 1 and (image[i][j] == np.array([214, 92, 92])).all()):
+                    licznik_dobrych_kolorow = 2
+                elif (licznik_dobrych_kolorow == 2 and (image[i][j] == np.array([66, 72, 200])).all()):
+                    self.flaga_cooldown = 20
+                    return 500
+        
+        self.old_image = image
+        return old_reward
 
+    # the old code
     class Net(nn.Module):
         # Code taken from https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html
 
@@ -165,6 +205,8 @@ class DeepQNet:
                 state = self.make_state(images)
                 action = self.random_action()
                 image, reward, finished, _, _ = env.step(action)
+                reward = self.new_reward(reward, image)
+                print(f"reward1: {reward}")
 
                 images.append(self.process_image(image))
                 new_state = self.make_state(images)
@@ -239,6 +281,8 @@ class DeepQNet:
                 action = self.best_action(state) if random.random() > epsilon else self.random_action()
                 # execute action in emulator and obtain next image, reward
                 image, reward, finished, _, _ = env.step(action)
+                reward = self.new_reward(reward, image)
+                print(f"reward2: {reward}")
 
                 images.append(self.process_image(image))
                 new_state = self.make_state(images)
@@ -296,12 +340,13 @@ class DeepQNet:
                 action = self.best_action(state)
                 #action = self.best_action(state) if random.random() > 0.05 else self.random_action()
                 image, reward, finished, _, _ = env.step(action)
+                reward = self.new_reward(reward, image)
+                print(f"reward3: {reward}")
                 images.append(self.process_image(image))
 
                 if frame_number > num_frames:
                     env.close()
                     return
-            print(reward)
 
     def save(self, path):
         self.net.to("cpu")

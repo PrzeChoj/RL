@@ -1,4 +1,5 @@
 .DS_Store
+.idea
 roms
 runs
 dqn-atari-master/runs
