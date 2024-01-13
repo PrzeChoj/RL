@@ -16,6 +16,7 @@ from skimage.transform import resize
 
 INFINITY = 10 ** 20
 MAX_REWARD = 30000.
+verbose = False
 
 class DeepQNet:
     def __init__(self, env_name):
@@ -206,7 +207,8 @@ class DeepQNet:
                 action = self.random_action()
                 image, reward, finished, _, _ = env.step(action)
                 reward = self.new_reward(reward, image)
-                print(f"reward1: {reward}")
+                if verbose:
+                    print(f"reward1: {reward}")
 
                 images.append(self.process_image(image))
                 new_state = self.make_state(images)
@@ -282,7 +284,8 @@ class DeepQNet:
                 # execute action in emulator and obtain next image, reward
                 image, reward, finished, _, _ = env.step(action)
                 reward = self.new_reward(reward, image)
-                print(f"reward2: {reward}")
+                if verbose:
+                    print(f"reward2: {reward}")
 
                 images.append(self.process_image(image))
                 new_state = self.make_state(images)
@@ -341,7 +344,8 @@ class DeepQNet:
                 #action = self.best_action(state) if random.random() > 0.05 else self.random_action()
                 image, reward, finished, _, _ = env.step(action)
                 reward = self.new_reward(reward, image)
-                print(f"reward3: {reward}")
+                if verbose:
+                    print(f"reward3: {reward}")
                 images.append(self.process_image(image))
 
                 if frame_number > num_frames:
