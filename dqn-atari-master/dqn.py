@@ -15,8 +15,8 @@ from skimage import color
 from skimage.transform import resize
 
 INFINITY = 10 ** 20
-MAX_REWARD = 30000.
-verbose = False
+MAX_REWARD = 1000.
+verbose = True
 
 class DeepQNet:
     def __init__(self, env_name):
@@ -42,26 +42,27 @@ class DeepQNet:
             return -1000 # bardzo duza kara
         
         # kolory:
-        # flaga 66, 72, 200
-        # gracz 214, 92, 92
+        # flaga niebieska 66, 72, 200
+        # flaga czerwona  184, 50, 50
+        # gracz           214, 92, 92
         
         # Gracz jest na image w linii 20.
         if (self.flaga_cooldown > -1):
             self.flaga_cooldown -= 1
         else:
             licznik_dobrych_kolorow = 0 # jak sie trafi flage, to bedzie 1, jak sie potem trafi gracza, to bedzie 2, jak sie potem trafi znow flage, to bedzie dobrze
-            i = 20
+            i = 20 # wiersz w ktorwym sprawdzamy gracza i flage
             for j in range(image.shape[1]):
-                if (licznik_dobrych_kolorow == 0 and (image[i][j] == np.array([66, 72, 200])).all()):
+                if (licznik_dobrych_kolorow == 0 and ( (image[i][j] == np.array([66, 72, 200])).all() or (image[i][j] == np.array([184, 50, 50])).all() )):
                     licznik_dobrych_kolorow = 1
                 elif (licznik_dobrych_kolorow == 1 and (image[i][j] == np.array([214, 92, 92])).all()):
                     licznik_dobrych_kolorow = 2
-                elif (licznik_dobrych_kolorow == 2 and (image[i][j] == np.array([66, 72, 200])).all()):
-                    self.flaga_cooldown = 20
+                elif (licznik_dobrych_kolorow == 2 and ( (image[i][j] == np.array([66, 72, 200])).all() or (image[i][j] == np.array([184, 50, 50])).all() )):
+                    self.flaga_cooldown = 30
                     return 500
         
         self.old_image = image
-        return old_reward
+        return -7
 
     # the old code
     class Net(nn.Module):
