@@ -16,7 +16,7 @@ from skimage.transform import resize
 
 INFINITY = 10 ** 20
 MAX_REWARD = 500.
-verbose = True
+verbose = False
 
 class DeepQNet:
     def __init__(self, env_name):
