@@ -15,8 +15,8 @@ from skimage import color
 from skimage.transform import resize
 
 INFINITY = 10 ** 20
-MAX_REWARD = 30000.
-verbose = False
+MAX_REWARD = 500.
+verbose = True
 
 class DeepQNet:
     def __init__(self, env_name):
@@ -26,42 +26,16 @@ class DeepQNet:
         
         # Adam's params
         self.old_image = None
-        self.static_images = 0
-        self.flaga_cooldown = -1 # jesli bylisly we fladze, to sie bedzie ladowalo w dol
         
     
     # Adam's code
     def new_reward(self, old_reward, image):
-        image = image[30:198, :]
-        if self.old_image is not None and np.sum(np.abs(self.old_image - image)) < 20000: # gdy sie nie rusza, to jest 19980
-            self.static_images += 1
-        else:
-            self.static_images = 0
+        if self.old_image is not None and (self.old_image != image[10, 50:90]).any():
+            self.old_image = image[10, 50:90]
+            return 500
         
-        if self.static_images > 20:
-            return -1000 # bardzo duza kara
-        
-        # kolory:
-        # flaga 66, 72, 200
-        # gracz 214, 92, 92
-        
-        # Gracz jest na image w linii 20.
-        if (self.flaga_cooldown > -1):
-            self.flaga_cooldown -= 1
-        else:
-            licznik_dobrych_kolorow = 0 # jak sie trafi flage, to bedzie 1, jak sie potem trafi gracza, to bedzie 2, jak sie potem trafi znow flage, to bedzie dobrze
-            i = 20
-            for j in range(image.shape[1]):
-                if (licznik_dobrych_kolorow == 0 and (image[i][j] == np.array([66, 72, 200])).all()):
-                    licznik_dobrych_kolorow = 1
-                elif (licznik_dobrych_kolorow == 1 and (image[i][j] == np.array([214, 92, 92])).all()):
-                    licznik_dobrych_kolorow = 2
-                elif (licznik_dobrych_kolorow == 2 and (image[i][j] == np.array([66, 72, 200])).all()):
-                    self.flaga_cooldown = 20
-                    return 500
-        
-        self.old_image = image
-        return old_reward
+        self.old_image = image[10, 50:90]
+        return -7
 
     # the old code
     class Net(nn.Module):
