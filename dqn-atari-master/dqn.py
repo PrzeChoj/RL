@@ -26,6 +26,7 @@ class DeepQNet:
         
         # Adam's params
         self.old_image = None
+        self.old_image_all = None
         
     
     # Adam's code
@@ -34,6 +35,11 @@ class DeepQNet:
             self.old_image = image[10, 50:90]
             return 500
         
+        if self.old_image_all is not None and (self.old_image_all != image).any():
+            self.old_image_all = image
+            return -500
+        
+        self.old_image_all = image
         self.old_image = image[10, 50:90]
         return -7
 
