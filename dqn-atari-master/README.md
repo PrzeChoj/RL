@@ -94,7 +94,7 @@ This repository contains trained weight for `breakout` game. To watch the agent 
 
 These weights were trained using this command,
 
-> python train.py breakout breakout.pt --replay_memory_size 50000 --replay_start_size 10000
+> python train.py breakout breakout.pt --replay_memory_size 100000 --replay_start_size 10000
 
 
 ### Learning curves
