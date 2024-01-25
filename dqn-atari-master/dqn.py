@@ -15,7 +15,7 @@ from skimage import color
 from skimage.transform import resize
 
 INFINITY = 10 ** 20
-MAX_REWARD = 500.
+MAX_REWARD = 1000.
 verbose = False
 
 class DeepQNet:
@@ -26,16 +26,34 @@ class DeepQNet:
         
         # Adam's params
         self.old_image = None
+        self.old_image_all = None
+        self.skip = 0
         
     
     # Adam's code
-    def new_reward(self, old_reward, image):
+    def new_reward(self, reword, image):
+        self.skip = (self.skip + 1) % 2
+        
+        if reword < -100:
+            print(reword)
+            return (1 + reword/20000) * 1000
+        
         if self.old_image is not None and (self.old_image != image[10, 50:90]).any():
             self.old_image = image[10, 50:90]
-            return 500
+            return 500.
+        
+        if self.skip == 1:
+            
+            img = color.rgb2gray(image[25:175,8:152])
+            
+            if self.old_image_all is not None and (self.old_image_all == img).all():
+                self.old_image_all = img
+                return -800.
+            
+            self.old_image_all = img
         
         self.old_image = image[10, 50:90]
-        return -7
+        return -3.
 
     # the old code
     class Net(nn.Module):
