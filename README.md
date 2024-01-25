@@ -1,8 +1,11 @@
-# RL
+# RL agent for Skiing
+
+# Setup
 
 ```
-conda create -n RL2 python=3.8.5; # 3.8.16 na dgx-3
-conda activate RL2
+conda create -n RL python=3.8.5;
+conda activate RL
+
 pip install gymnasium
 pip install "gymnasium[atari]"
 pip install gym
@@ -10,33 +13,21 @@ pip install pygame
 pip install torch
 pip install scikit-image
 pip install tensorboard
-
 pip install tqdm
 
-pip install notebook
+ale-import-roms roms/ # Instalacja gry Skiing
 
-ale-import-roms roms/
+python skiing_play.py # Gra dla czlowieka
 
-python skiing_play.py
-
-python dqn-atari-master/test.py Skiing dqn-atari-master/Skiing.pt
+python test.py Skiing dqn-atari-master/Skiing.pt
+python ./test.py Skiing ./Trained_Agents/Skiing_1_old.pt
+python ./test.py Skiing ./Trained_Agents/Skiing_6_dont_stop_v3.pt
 ```
 
-# Run DQN
+# Trening DQN
 
-### Train
 ```
-pyenv activate RL
+conda activate RL
 
-python3 ./dqn-atari-master/train.py Skiing ./dqn-atari-master/Skiing.pt --replay_memory_size 20000 --replay_start_size 3000 --checkpoint --minibatch_size 64
-python3 ./dqn-atari-master/train.py Skiing ./dqn-atari-master/Skiing_Adam_.pt --replay_memory_size 2000 --replay_start_size 300 --checkpoint --minibatch_size 64
-python3 ./dqn-atari-master/train.py Skiing ./dqn-atari-master/Skiing_Adam_eden.pt --replay_memory_size 20000 --replay_start_size 3000 --checkpoint --minibatch_size 64
-python3 ./dqn-atari-master/train.py Skiing ./dqn-atari-master/Skiing_Adam_eden2.pt --replay_memory_size 20000 --replay_start_size 3000 --checkpoint --minibatch_size 64
-```
-
-### Test
-```
-python3 ./dqn-atari-master/test.py Skiing ./dqn-atari-master/Skiing.pt
-python3 ./dqn-atari-master/test.py Skiing ./dqn-atari-master/Skiing_Adam.pt
-python3 ./dqn-atari-master/test.py Skiing ./dqn-atari-master/Skiing_Adam_eden2.pt
+python ./train.py Skiing ./Skiing_numer_nazwa_testu.pt --replay_memory_size 20000 --replay_start_size 3000 --checkpoint --minibatch_size 64
 ```
